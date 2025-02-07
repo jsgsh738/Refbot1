@@ -7,7 +7,7 @@ from aiogram.utils.markdown import hbold
 from datetime import datetime
 from keep_alive import keep_alive  # Поддержка работы на Render
 
-TOKEN = "YOUR_BOT_TOKEN"
+TOKEN = "7926852495:AAFVySjZVau5_sxafIPKMeBRDFmehiIbDxI"
 BONUS_INTERVAL = 6 * 60 * 60  # 6 часов
 
 bot = Bot(token=TOKEN, parse_mode="HTML")
