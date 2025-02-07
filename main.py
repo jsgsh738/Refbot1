@@ -132,15 +132,6 @@ async def main():
 def get_ma3coin(user_id):
     cursor.execute("SELECT ma3coin FROM users WHERE user_id = ?", (user_id,))
     return cursor.fetchone()[0] or 0
-
-if __name__ == "__main__":
-    keep_alive()
-    while True:
-    try:
-        asyncio.run(main())
-    except Exception as e:
-        print(f"Ошибка: {e}")
-
     asyncio.run(main())  # Запуск бота
     
 
