@@ -7,7 +7,7 @@ from aiogram.utils.markdown import hbold
 from aiogram.exceptions import TelegramBadRequest
 from datetime import datetime
 
-TOKEN = "7910975290:AAF99SgbTc6Gx3y4u49nYZEewh5ZU7_lQTk"
+TOKEN = "YOUR_BOT_TOKEN"
 CHANNEL_ID = "@Agnihachannel"
 BONUS_INTERVAL = 6 * 60 * 60  # 6 часов
 
@@ -170,3 +170,4 @@ def get_firecoins(user_id):
 
 if __name__ == "__main__":
     asyncio.run(main())
+    
