@@ -151,3 +151,14 @@ def get_firecoins(user_id):
 
 if __name__ == "__main__":
     asyncio.run(main())
+
+import asyncio
+
+async def keep_alive():
+    while True:
+        await asyncio.sleep(3600)  # Бот будет ждать 1 час в бесконечном цикле
+
+if __name__ == "__main__":
+    asyncio.create_task(keep_alive())  # Запускаем бесконечный цикл
+    asyncio.run(main())  # Запускаем бота
+
