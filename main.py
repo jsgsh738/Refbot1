@@ -64,12 +64,10 @@ async def start(message: types.Message):
                        (user_id, username, 0, referrer_id))
         conn.commit()
 
-        # 🎉 Начисляем 2 огнекоина за реферал
         if referrer_id and referrer_id.isdigit():
             cursor.execute("UPDATE users SET firecoins = firecoins + 2 WHERE user_id = ?", (int(referrer_id),))
             conn.commit()
 
-    # Проверка подписки
     if not await check_subscription(user_id):
         keyboard = InlineKeyboardMarkup(inline_keyboard=[
             [InlineKeyboardButton(text="🔥 Подписаться!", url=f"https://t.me/{CHANNEL_ID[1:]}")],
@@ -97,35 +95,11 @@ async def profile(call: types.CallbackQuery):
     keyboard = InlineKeyboardMarkup(inline_keyboard=[
         [InlineKeyboardButton(text="💰 Баланс", callback_data="balance")],
         [InlineKeyboardButton(text="🛍 Магазин", callback_data="shop")],
-        [InlineKeyboardButton(text="🔙 Назад", callback_data="back_to_main")]
+        [InlineKeyboardButton(text="🔙 Назад", callback_data="main_menu")]  # Теперь кнопка работает!
     ])
 
     await call.message.edit_text(f"👤 {hbold(username)}, вот твой профиль:\n"
                                  f"💰 Баланс: {get_firecoins(user_id)} 🔥", reply_markup=keyboard)
-
-# 💰 Баланс
-@dp.callback_query(lambda call: call.data == "balance")
-async def balance(call: types.CallbackQuery):
-    user_id = call.from_user.id
-    balance = get_firecoins(user_id)
-    await call.answer(f"💰 Твой баланс: {balance} 🔥", show_alert=True)
-
-# 🎁 Получение бонуса
-@dp.callback_query(lambda call: call.data == "get_bonus")
-async def claim_bonus(call: types.CallbackQuery):
-    user_id = call.from_user.id
-    cursor.execute("SELECT last_bonus FROM users WHERE user_id = ?", (user_id,))
-    last_bonus = cursor.fetchone()[0]
-
-    now = int(datetime.now().timestamp())
-    if last_bonus and now - last_bonus < BONUS_INTERVAL:
-        remaining = BONUS_INTERVAL - (now - last_bonus)
-        hours, minutes = divmod(remaining // 60, 60)
-        await call.answer(f"⏳ Бонус уже получен! Приходи через {hours}ч {minutes}м.", show_alert=True)
-    else:
-        cursor.execute("UPDATE users SET firecoins = firecoins + 3, last_bonus = ? WHERE user_id = ?", (now, user_id))
-        conn.commit()
-        await call.answer("🎉 Ты получил +3 🔥 огнекоина!", show_alert=True)
 
 # 🏆 Топ пользователей
 @dp.callback_query(lambda call: call.data == "top_users")
@@ -135,9 +109,11 @@ async def top_users(call: types.CallbackQuery):
     text = "🔥 <b>Топ-10 пользователей:</b>\n"
     for i, (username, firecoins) in enumerate(top, start=1):
         text += f"{i}. {hbold(username)} — {firecoins} 🔥\n"
-    await call.message.edit_text(text, reply_markup=InlineKeyboardMarkup(
-        inline_keyboard=[[InlineKeyboardButton(text="🔙 Назад", callback_data="back_to_main")]]
-    ))
+
+    keyboard = InlineKeyboardMarkup(inline_keyboard=[
+        [InlineKeyboardButton(text="🔙 Назад", callback_data="main_menu")]  # Теперь кнопка работает!
+    ])
+    await call.message.edit_text(text, reply_markup=keyboard)
 
 # 🔗 Реферальная ссылка
 @dp.callback_query(lambda call: call.data == "referral")
@@ -145,18 +121,23 @@ async def referral(call: types.CallbackQuery):
     user_id = call.from_user.id
     bot_username = (await bot.get_me()).username
     link = f"https://t.me/{bot_username}?start={user_id}"
-    await call.answer(f"🔗 Твоя реферальная ссылка:\n{link}", show_alert=True)
+
+    keyboard = InlineKeyboardMarkup(inline_keyboard=[
+        [InlineKeyboardButton(text="🔙 Назад", callback_data="main_menu")]  # Теперь кнопка работает!
+    ])
+
+    await call.message.edit_text(f"🔗 Твоя реферальная ссылка:\n{link}", reply_markup=keyboard)
 
 # 🛍 Магазин
 @dp.callback_query(lambda call: call.data == "shop")
 async def shop(call: types.CallbackQuery):
-    await call.message.edit_text("🛍 Пока что нет товаров! Скоро появятся!", 
-                                 reply_markup=InlineKeyboardMarkup(inline_keyboard=[
-                                     [InlineKeyboardButton(text="🔙 Назад", callback_data="profile")]
-                                 ]))
+    keyboard = InlineKeyboardMarkup(inline_keyboard=[
+        [InlineKeyboardButton(text="🔙 Назад", callback_data="main_menu")]  # Теперь кнопка работает!
+    ])
+    await call.message.edit_text("🛍 Пока что нет товаров! Скоро появятся!", reply_markup=keyboard)
 
 # 🔙 Назад в главное меню
-@dp.callback_query(lambda call: call.data == "back_to_main")
+@dp.callback_query(lambda call: call.data == "main_menu")
 async def back_to_main(call: types.CallbackQuery):
     await main_menu(call.message)
 
@@ -170,4 +151,3 @@ def get_firecoins(user_id):
 
 if __name__ == "__main__":
     asyncio.run(main())
-    
