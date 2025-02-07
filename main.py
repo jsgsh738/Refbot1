@@ -136,10 +136,6 @@ def get_ma3coins(user_id):
     row = cursor.fetchone()
     return row[0] if row else 0
 
-if __name__ == "__main__":
-    keep_alive()  # Поддержка работы бота на Render
-    asyncio.run(main())  # Запуск бота
-
 import asyncio
 
 async def keep_alive():
